@@ -376,3 +376,48 @@ UF_codigo = data.frame(
 # Tarefa 3: Exportar o banco de dados com o nome BDEM_UF.csv (Exemplo: BDEM_RJ.csv)
 # Ao terminar a Tarefa 3 commit com o comentário "dados BDEM_UF 2016 e script - BDEM - tarefas 1 a 3"  e enviar para o repositório Projeto_BDEM_2016
  
+library(readr)
+library(dplyr)
+
+dados_sim <- read.csv2("SIM_2016.csv", stringsAsFactors = FALSE)
+
+dim(dados_sim)
+str(dados_sim)
+head(dados_sim)
+
+cols_indices <- c(1, 3, 9, 10, 11, 14, 17, 35, 47)
+cols_nomes   <- c("CONTADOR", "TIPOBITO", "IDADE", "SEXO", "RACACOR", 
+                  "ESC2010", "CODMUNRES", "TPMORTEOCO", "CAUSABAS")
+
+dados_sim_1 <- dados_sim[, cols_indices]
+colnames(dados_sim_1) <- cols_nomes
+
+uf_codigo <- "33"
+
+dados_sim_2 <- dados_sim_1 %>% 
+  filter(substr(as.character(CODMUNRES), 1, 2) == uf_codigo)
+
+nrow(dados_sim_2)
+
+table(dados_sim_2$TIPOBITO, useNA = "ifany")
+table(dados_sim_2$SEXO, useNA = "ifany")
+table(dados_sim_2$RACACOR, useNA = "ifany")
+table(dados_sim_2$ESC2010, useNA = "ifany")
+table(dados_sim_2$TPMORTEOCO, useNA = "ifany")
+head(table(dados_sim_2$CAUSABAS), 20)
+
+summary(as.numeric(dados_sim_2$IDADE))
+
+dados_sim_2$SEXO[dados_sim_2$SEXO == 0 | dados_sim_2$SEXO == 9] <- NA
+dados_sim_2$RACACOR[dados_sim_2$RACACOR == 9] <- NA
+dados_sim_2$ESC2010[dados_sim_2$ESC2010 == 9] <- NA
+dados_sim_2$TPMORTEOCO[dados_sim_2$TPMORTEOCO == 9] <- NA
+
+dados_sim_2$IDADE[dados_sim_2$IDADE %in% c("999", "9999", "9")] <- NA
+
+dados_sim_2$TIPOBITO <- factor(
+  dados_sim_2$TIPOBITO, 
+  levels = c(1, 2), 
+  labels = c("Fetal", "Não fetal")
+)
+
