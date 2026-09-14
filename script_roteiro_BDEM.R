@@ -421,3 +421,92 @@ dados_sim_2$TIPOBITO <- factor(
   labels = c("Fetal", "Não fetal")
 )
 
+
+converte_idade_dias <- function(idade) {
+  idade_num <- as.numeric(as.character(idade))
+  prefixo <- floor(idade_num / 100)
+  valor <- idade_num %% 100
+  case_when(
+    prefixo == 1 ~ 0,
+    prefixo == 2 ~ valor,
+    prefixo == 3 ~ valor * 30.4375,
+    prefixo == 4 ~ valor * 365.25,
+    TRUE ~ NA_real_
+  )
+}
+
+converte_idade_anos <- function(idade) {
+  idade_num <- as.numeric(as.character(idade))
+  prefixo <- floor(idade_num / 100)
+  valor <- idade_num %% 100
+  case_when(
+    prefixo == 4 ~ valor,
+    prefixo %in% 1:3 ~ 0,
+    TRUE ~ NA_real_
+  )
+}
+
+dados_sim_prep <- dados_sim_2 %>%
+  mutate(
+    idade_dias = converte_idade_dias(IDADE),
+    idade_anos = converte_idade_anos(IDADE),
+    capitulo_cid = substr(CAUSABAS, 1, 1)
+  )
+
+SIM_RJ <- dados_sim_prep %>%
+  group_by(CODMUNRES) %>%
+  summarise(
+    ANO = 2016,
+    NIVEL = "MUNICIPIO",
+    CODMUNRES = unique(CODMUNRES),
+    TO = n(),
+    TORC = sum(complete.cases(dados_sim[dados_sim$CODMUNRES == unique(CODMUNRES), ]), na.rm = TRUE),
+    TORCR = sum(!is.na(TIPOBITO) & !is.na(IDADE) & !is.na(SEXO) & !is.na(RACACOR) & 
+                  !is.na(ESC2010) & !is.na(CODMUNRES) & !is.na(TPMORTEOCO) & !is.na(CAUSABAS)),
+    TO_NN = sum(capitulo_cid %in% c("V", "W", "X", "Y"), na.rm = TRUE),
+    TO_N = sum(!capitulo_cid %in% c("V", "W", "X", "Y") & !is.na(CAUSABAS), na.rm = TRUE),
+    TO_CBI = sum(capitulo_cid %in% c("A", "B"), na.rm = TRUE),
+    TO_CB_N = sum(capitulo_cid %in% c("C", "D"), na.rm = TRUE),
+    TO_CB_C = sum(capitulo_cid == "I", na.rm = TRUE),
+    TO_CB_R = sum(capitulo_cid == "J", na.rm = TRUE),
+    TO_CB_O = sum(!capitulo_cid %in% c("A", "B", "C", "D", "I", "J", "V", "W", "X", "Y") & !is.na(CAUSABAS), na.rm = TRUE),
+    TO_M = sum(SEXO == 1, na.rm = TRUE),
+    TO_F = sum(SEXO == 2, na.rm = TRUE),
+    TO_F_IF = sum(SEXO == 2 & idade_anos >= 15 & idade_anos <= 49, na.rm = TRUE),
+    TO_FT = sum(TIPOBITO == "Fetal", na.rm = TRUE),
+    TO_NT = sum(idade_dias >= 0 & idade_dias <= 27, na.rm = TRUE),
+    TO_NT_P = sum(idade_dias >= 0 & idade_dias <= 6, na.rm = TRUE),
+    TO_NT_T = sum(idade_dias >= 7 & idade_dias <= 27, na.rm = TRUE),
+    TO_PNT = sum(idade_dias >= 28 & idade_dias <= 364, na.rm = TRUE),
+    TONT_B = sum(idade_dias >= 0 & idade_dias <= 27 & RACACOR == 1, na.rm = TRUE),
+    TONT_PT = sum(idade_dias >= 0 & idade_dias <= 27 & RACACOR == 2, na.rm = TRUE),
+    TONT_A = sum(idade_dias >= 0 & idade_dias <= 27 & RACACOR == 3, na.rm = TRUE),
+    TONT_PD = sum(idade_dias >= 0 & idade_dias <= 27 & RACACOR == 4, na.rm = TRUE),
+    TONT_I = sum(idade_dias >= 0 & idade_dias <= 27 & RACACOR == 5, na.rm = TRUE),
+    TO_MT = sum(TPMORTEOCO %in% c(1, 2, 3, 4, 5), na.rm = TRUE),
+    TO_MT_DG = sum(TPMORTEOCO == 1, na.rm = TRUE),
+    TO_MT_PT = sum(TPMORTEOCO == 2, na.rm = TRUE),
+    TO_MT_AB = sum(TPMORTEOCO == 3, na.rm = TRUE),
+    TO_MT_42 = sum(TPMORTEOCO == 4, na.rm = TRUE),
+    TO_MT_43 = sum(TPMORTEOCO == 5, na.rm = TRUE),
+    TO_MT_P = sum(TPMORTEOCO %in% c(1, 2, 3, 4), na.rm = TRUE),
+    TO_MT_P_I = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & idade_anos >= 15 & idade_anos <= 49, na.rm = TRUE),
+    TO_MT_P_ES = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 0, na.rm = TRUE),
+    TO_MT_P_EFI = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 1, na.rm = TRUE),
+    TO_MT_P_EFII = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 2, na.rm = TRUE),
+    TO_MT_P_EM = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 3, na.rm = TRUE),
+    TO_MT_P_ESI = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 4, na.rm = TRUE),
+    TO_MT_P_ESC = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 5, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ordem_var <- c(
+  "ANO", "NIVEL", "CODMUNRES", "TO", "TORC", "TORCR", "TO_NN", "TO_N", 
+  "TO_CBI", "TO_CB_N", "TO_CB_C", "TO_CB_R", "TO_CB_O", "TO_M", "TO_F", 
+  "TO_F_IF", "TO_FT", "TO_NT", "TO_NT_P", "TO_NT_T", "TO_PNT", "TONT_B", 
+  "TONT_PT", "TONT_A", "TONT_PD", "TONT_I", "TO_MT", "TO_MT_DG", "TO_MT_PT", 
+  "TO_MT_AB", "TO_MT_42", "TO_MT_43", "TO_MT_P", "TO_MT_P_I", "TO_MT_P_ES", 
+  "TO_MT_P_EFI", "TO_MT_P_EFII", "TO_MT_P_EM", "TO_MT_P_ESI", "TO_MT_P_ESC"
+)
+
+SIM_RJ <- SIM_RJ[, ordem_var]
