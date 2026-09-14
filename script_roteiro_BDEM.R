@@ -510,3 +510,5 @@ ordem_var <- c(
 )
 
 SIM_RJ <- SIM_RJ[, ordem_var]
+
+write.csv2(SIM_RJ, file = "SIM_RJ.csv", row.names = FALSE, fileEncoding = "UTF-8")
