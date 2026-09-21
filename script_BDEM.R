@@ -136,6 +136,17 @@ dados_sinasc_2 <- dados_sinasc_1[substr(as.character(dados_sinasc_1$CODMUNRES), 
 # SEXO, RACACOR, IDANOMAL, ESCMAE2010, RACACORMAE, TPAPRESENT, TPROBSON, PARIDADE, KOTELCHUCK
 # Avalie também os valores das variáveis quantitativas de IDADEMAE, SEMAGESTAC, APGAR5 e PESO
 
+vars_qualitativas <- c("LOCNASC", "ESTCIVMAE", "GESTACAO", "GRAVIDEZ", "PARTO", 
+                       "SEXO", "RACACOR", "IDANOMAL", "ESCMAE2010", "RACACORMAE", 
+                       "TPAPRESENT", "TPROBSON", "PARIDADE", "KOTELCHUCK")
+
+lapply(dados_sinasc_2[, vars_qualitativas], function(x) table(x, useNA = "always"))
+
+lapply(dados_sinasc_2[, vars_qualitativas], function(x) prop.table(table(x, useNA = "always")) * 100)
+
+vars_quantitativas <- c("IDADEMAE", "SEMAGESTAC", "APGAR5", "PESO")
+
+summary(dados_sinasc_2[, vars_quantitativas])
 
 # Ao terminar a Tarefa 4 commit com a mensagem "script BDEM - SINASC - tarefas 1 a 4" e envie para o repositório Projeto_BDEM_2016
 
