@@ -157,6 +157,24 @@ summary(dados_sinasc_2[, vars_quantitativas])
 # KOTELCHUCK = 9 significa "Não informado"   TPROBSON = 11 significa "Não classificado por falta de informação"
 # Em variáveis quantitativas como IDADEMAE verificar se existem valores como 9999 para NA
 
+vars_com_9 <- c("LOCNASC", "ESTCIVMAE", "GESTACAO", "GRAVIDEZ", "PARTO", 
+                "RACACOR", "IDANOMAL", "ESCMAE2010", "RACACORMAE", 
+                "TPAPRESENT", "KOTELCHUCK")
+
+for (var in vars_com_9) {
+  dados_sinasc_2[[var]][dados_sinasc_2[[var]] == 9] <- NA
+}
+
+dados_sinasc_2$SEXO[dados_sinasc_2$SEXO %in% c(0, 9)] <- NA
+
+dados_sinasc_2$TPROBSON[dados_sinasc_2$TPROBSON == 11] <- NA
+
+dados_sinasc_2$IDADEMAE[dados_sinasc_2$IDADEMAE == 99] <- NA
+dados_sinasc_2$SEMAGESTAC[dados_sinasc_2$SEMAGESTAC == 99] <- NA
+dados_sinasc_2$APGAR5[dados_sinasc_2$APGAR5 == 99] <- NA
+dados_sinasc_2$PESO[dados_sinasc_2$PESO == 9999] <- NA
+
+summary(dados_sinasc_2[, c("LOCNASC", "ESTCIVMAE", "SEXO", "TPROBSON", "KOTELCHUCK", "IDADEMAE", "PESO")])
 
 # Ao terminar a Tarefa 5 commit com a mensagem "script BDEM - SINASC - tarefas 1 a 5" e envie para o repositório Projeto_BDEM_2016
 
