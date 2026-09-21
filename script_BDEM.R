@@ -98,6 +98,9 @@
 # Por uma questão de padronização coloque todos os nomes das variáveis em letra maiúscula,
 # usando o comando names(dados_sinasc) = toupper(names(dados_sinasc))
 
+dados_sinasc <- read.csv2("SINASC_2016.csv")
+names(dados_sinasc) <- toupper(names(dados_sinasc))
+str(dados_sinasc)
 
 # Ao terminar a Tarefa 1 commit com a mensagem "script BDEM - SINASC - tarefa 1" e envie para o repositório Projeto_BDEM_2016
 
