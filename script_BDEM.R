@@ -338,6 +338,180 @@ table(dados_sinasc_2$F_PIG, useNA = "always")
 # Tarefa 9. Criar um banco de dados, de nome SINASC_UF.csv (Exemplo: SINASC_RJ.csv), contendo as variáveis listadas no arquivo “Variáveis - Projeto - Tarefa 9 - SINASC.pdf”
 # Atenção: a ordem das variáveis do arquivo deve ser respeitada
 
+calcular_indicadores_sinasc <- function(df, df_original_61, ano = 2016, nivel = "UF", cod_mun = 42) {
+  
+  tn <- nrow(df)
+  
+  if (nivel == "UF") {
+    tnrc <- sum(complete.cases(df_original_61[substr(as.character(df_original_61$CODMUNRES), 1, 2) == as.character(cod_mun), ]))
+  } else {
+    tnrc <- sum(complete.cases(df_original_61[df_original_61$CODMUNRES == cod_mun, ]))
+  }
+  
+  tnrcr <- sum(complete.cases(df[, c("CODMUNNASC", "LOCNASC", "IDADEMAE", "ESTCIVMAE", "CODMUNRES", 
+                                     "GESTACAO", "GRAVIDEZ", "PARTO", "SEXO", "APGAR5", 
+                                     "RACACOR", "PESO", "IDANOMAL", "ESCMAE2010", "RACACORMAE", 
+                                     "SEMAGESTAC", "TPAPRESENT", "TPROBSON", "PARIDADE", "KOTELCHUCK", "CONTADOR")]))
+  
+  tgi_15 <- sum(df$IDADEMAE < 15, na.rm = TRUE)   
+  tgi_15_19 <- sum(df$IDADEMAE >= 15 & df$IDADEMAE <= 19, na.rm = TRUE)   
+  tgi_20_24 <- sum(df$IDADEMAE >= 20 & df$IDADEMAE <= 24, na.rm = TRUE)   
+  tgi_25_29 <- sum(df$IDADEMAE >= 25 & df$IDADEMAE <= 29, na.rm = TRUE)   
+  tgi_30_34 <- sum(df$IDADEMAE >= 30 & df$IDADEMAE <= 34, na.rm = TRUE)   
+  tgi_35_39 <- sum(df$IDADEMAE >= 35 & df$IDADEMAE <= 39, na.rm = TRUE)   
+  tgi_40_44 <- sum(df$IDADEMAE >= 40 & df$IDADEMAE <= 44, na.rm = TRUE)   
+  tgi_45_49 <- sum(df$IDADEMAE >= 45 & df$IDADEMAE <= 49, na.rm = TRUE)   
+  tgi_50 <- sum(df$IDADEMAE >= 50, na.rm = TRUE)
+  tgif <- sum(df$IDADEMAE >= 15 & df$IDADEMAE <= 49, na.rm = TRUE)
+  
+  im_p25 <- quantile(df$IDADEMAE, 0.25, na.rm = TRUE)
+  im_p50 <- quantile(df$IDADEMAE, 0.50, na.rm = TRUE)
+  im_p75 <- quantile(df$IDADEMAE, 0.75, na.rm = TRUE)
+  im_md  <- mean(df$IDADEMAE, na.rm = TRUE)
+  im_dp  <- sd(df$IDADEMAE, na.rm = TRUE)
+  
+  em_s   <- sum(df$ESCMAE2010 == "Sem escolaridade", na.rm = TRUE)
+  em_fi  <- sum(df$ESCMAE2010 == "Fundamental I", na.rm = TRUE)
+  em_fii <- sum(df$ESCMAE2010 == "Fundamental II", na.rm = TRUE)
+  em_m   <- sum(df$ESCMAE2010 == "Médio", na.rm = TRUE)
+  em_si  <- sum(df$ESCMAE2010 == "Superior incompleto", na.rm = TRUE)
+  em_sc  <- sum(df$ESCMAE2010 == "Superior completo", na.rm = TRUE)
+  
+  tgrc_b  <- sum(df$RACACORMAE == "Branca", na.rm = TRUE)
+  tgrc_pt <- sum(df$RACACORMAE == "Preta", na.rm = TRUE)
+  tgrc_a  <- sum(df$RACACORMAE == "Amarela", na.rm = TRUE)
+  tgrc_pd <- sum(df$RACACORMAE == "Parda", na.rm = TRUE)
+  tgrc_i  <- sum(df$RACACORMAE == "Indígena", na.rm = TRUE)
+  
+  tgsc <- sum(df$ESTCIV == "Sem companheiro", na.rm = TRUE)
+  tgcc <- sum(df$ESTCIV == "Com companheiro", na.rm = TRUE)
+  
+  tgpri  <- sum(df$PARIDADE == "Nulípara", na.rm = TRUE)
+  tgnpri <- sum(df$PARIDADE == "Multípara", na.rm = TRUE)
+  
+  tgu <- sum(df$GRAVIDEZ == "Única", na.rm = TRUE)
+  tgg <- sum(df$GRAVIDEZ %in% c("Dupla", "Tripla e mais"), na.rm = TRUE)
+  
+  tgd_22    <- sum(df$SEMAGESTAC < 22, na.rm = TRUE)
+  tgd_22_27 <- sum(df$SEMAGESTAC >= 22 & df$SEMAGESTAC <= 27, na.rm = TRUE)
+  tgd_28_31 <- sum(df$SEMAGESTAC >= 28 & df$SEMAGESTAC <= 31, na.rm = TRUE)
+  tgd_32_36 <- sum(df$SEMAGESTAC >= 32 & df$SEMAGESTAC <= 36, na.rm = TRUE)
+  tgd_37_41 <- sum(df$SEMAGESTAC >= 37 & df$SEMAGESTAC <= 41, na.rm = TRUE)
+  tgd_42    <- sum(df$SEMAGESTAC >= 42, na.rm = TRUE)
+  
+  tgd_prt <- sum(df$SEMAGESTAC < 37, na.rm = TRUE)
+  tgd_at  <- sum(df$SEMAGESTAC >= 37 & df$SEMAGESTAC <= 41, na.rm = TRUE)
+  tgd_pst <- sum(df$SEMAGESTAC >= 42, na.rm = TRUE)
+  
+  dg_p25 <- quantile(df$SEMAGESTAC, 0.25, na.rm = TRUE)
+  dg_p50 <- quantile(df$SEMAGESTAC, 0.50, na.rm = TRUE)
+  dg_p75 <- quantile(df$SEMAGESTAC, 0.75, na.rm = TRUE)
+  dg_md  <- mean(df$SEMAGESTAC, na.rm = TRUE)
+  dg_dp  <- sd(df$SEMAGESTAC, na.rm = TRUE)
+  
+  tkc_nr  <- sum(df$KOTELCHUCK == "Não realizou pré-natal", na.rm = TRUE)
+  tkc_id  <- sum(df$KOTELCHUCK == "Inadequado", na.rm = TRUE)
+  tkc_it  <- sum(df$KOTELCHUCK == "Intermediário", na.rm = TRUE)
+  tkc_ad  <- sum(df$KOTELCHUCK == "Adequado", na.rm = TRUE)
+  tkc_mad <- sum(df$KOTELCHUCK == "Mais que adequado", na.rm = TRUE)
+  
+  tgprg_s <- sum(df$PEREG == "Sim", na.rm = TRUE)
+  tgprg_n <- sum(df$PEREG == "Não", na.rm = TRUE)
+  
+  tpv <- sum(df$PARTO == "Vaginal", na.rm = TRUE)
+  tpc <- sum(df$PARTO == "Cesáreo", na.rm = TRUE)
+  
+  trap_c <- sum(df$TPAPRESENT == "Cefálica", na.rm = TRUE)
+  trap_p <- sum(df$TPAPRESENT == "Pélvica ou podálica", na.rm = TRUE)
+  trap_t <- sum(df$TPAPRESENT == "Transversa", na.rm = TRUE)
+  
+  tgrob_1  <- sum(df$TPROBSON == "Grupo 1", na.rm = TRUE)
+  tgrob_2  <- sum(df$TPROBSON == "Grupo 2", na.rm = TRUE)
+  tgrob_3  <- sum(df$TPROBSON == "Grupo 3", na.rm = TRUE)
+  tgrob_4  <- sum(df$TPROBSON == "Grupo 4", na.rm = TRUE)
+  tgrob_5  <- sum(df$TPROBSON == "Grupo 5", na.rm = TRUE)
+  tgrob_6  <- sum(df$TPROBSON == "Grupo 6", na.rm = TRUE)
+  tgrob_7  <- sum(df$TPROBSON == "Grupo 7", na.rm = TRUE)
+  tgrob_8  <- sum(df$TPROBSON == "Grupo 8", na.rm = TRUE)
+  tgrob_9  <- sum(df$TPROBSON == "Grupo 9", na.rm = TRUE)
+  tgrob_10 <- sum(df$TPROBSON == "Grupo 10", na.rm = TRUE)
+  
+  tnloc_h  <- sum(df$LOCNASC == "Hospital", na.rm = TRUE)
+  tnloc_es <- sum(df$LOCNASC == "Outro estabelecimento de saúde", na.rm = TRUE)
+  tnloc_d  <- sum(df$LOCNASC == "Domicílio", na.rm = TRUE)
+  tnloc_o  <- sum(df$LOCNASC == "Outro", na.rm = TRUE)
+  tnloc_ai <- sum(df$LOCNASC == "Aldeia indígena", na.rm = TRUE)
+  
+  trs_m <- sum(df$SEXO == "Masculino", na.rm = TRUE)
+  trs_f <- sum(df$SEXO == "Feminino", na.rm = TRUE)
+  
+  trrc_b  <- sum(df$RACACOR == "Branca", na.rm = TRUE)
+  trrc_pt <- sum(df$RACACOR == "Preta", na.rm = TRUE)
+  trrc_a  <- sum(df$RACACOR == "Amarela", na.rm = TRUE)
+  trrc_pd <- sum(df$RACACOR == "Parda", na.rm = TRUE)
+  trrc_i  <- sum(df$RACACOR == "Indígena", na.rm = TRUE)
+  
+  trp_bp <- sum(df$F_PESO == "Baixo peso", na.rm = TRUE)
+  trp_n  <- sum(df$F_PESO == "Peso normal", na.rm = TRUE)
+  trp_m  <- sum(df$F_PESO == "Macrossomia", na.rm = TRUE)
+  
+  peso_p25 <- quantile(df$PESO, 0.25, na.rm = TRUE)
+  peso_p50 <- quantile(df$PESO, 0.50, na.rm = TRUE)
+  peso_p75 <- quantile(df$PESO, 0.75, na.rm = TRUE)
+  peso_md  <- mean(df$PESO, na.rm = TRUE)
+  peso_dp  <- sd(df$PESO, na.rm = TRUE)
+  
+  trpig_p <- sum(df$F_PIG == "PIG", na.rm = TRUE)
+  trpig_a <- sum(df$F_PIG == "AIG", na.rm = TRUE)
+  trpig_g <- sum(df$F_PIG == "GIG", na.rm = TRUE)
+  
+  trapg5_b <- sum(df$F_APGAR5 == "Baixo", na.rm = TRUE)
+  trapg5_n <- sum(df$F_APGAR5 == "Normal", na.rm = TRUE)
+  
+  apg5_md <- mean(df$APGAR5, na.rm = TRUE)
+  apg5_dp <- sd(df$APGAR5, na.rm = TRUE)
+  
+  trac  <- sum(df$IDANOMAL == "Sim", na.rm = TRUE)
+  trsac <- sum(df$IDANOMAL == "Não", na.rm = TRUE)
+  
+  data.frame(
+    ANO = ano, NIVEL = nivel, CODMUNRES = cod_mun, TN = tn, TNRC = tnrc, TNRCR = tnrcr,
+    TGI_15 = tgi_15, TGI_15_19 = tgi_15_19, `TGI 20 24` = tgi_20_24, `TGI 25 29` = tgi_25_29,
+    TGI_30_34 = tgi_30_34, `TGI 35 39` = tgi_35_39, `TGI 40 44` = tgi_40_44, TGI_45_49 = tgi_45_49, `TGI 50` = tgi_50, TGIF = tgif,
+    IM_P25 = im_p25, `IM P50` = im_p50, IM_P75 = im_p75, IM_MD = im_md, `IM DP` = im_dp,
+    `EM S` = em_s, EM_FI = em_fi, EM_FII = em_fii, EM_M = em_m, `EM SI` = em_si, EM_SC = em_sc,
+    TGRC_B = tgrc_b, TGRC_PT = tgrc_pt, TGRC_A = tgrc_a, TGRC_PD = tgrc_pd, TGRC_I = tgrc_i,
+    TGSC = tgsc, TGCC = tgcc, TGPRI = tgpri, TGNPRI = tgnpri,
+    TGU = tgu, TGG = tgg, TGD_22 = tgd_22, `TGD 22 27` = tgd_22_27, TGD_28_31 = tgd_28_31, `TGD 32 36` = tgd_32_36,
+    TGD_37_41 = tgd_37_41, TGD_42 = tgd_42, `TGD PRT` = tgd_prt, TGD_AT = tgd_at, `TGD PST` = tgd_pst,
+    `DG P25` = dg_p25, `DG P50` = dg_p50, `DG P75` = dg_p75, DG_MD = dg_md, `DG DP` = dg_dp,
+    TKC_NR = tkc_nr, TKC_ID = tkc_id, TKC_IT = tkc_it, TKC_AD = tkc_ad, `TKC MAD` = tkc_mad,
+    TGPRG_S = tgprg_s, TGPRG_N = tgprg_n, TPV = tpv, TPC = tpc,
+    `TRAP C` = trap_c, `TRAP P` = trap_p, TRAP_T = trap_t,
+    TGROB_1 = tgrob_1, TGROB_2 = tgrob_2, `TGROB 3` = tgrob_3, `TGROB 4` = tgrob_4, `TGROB 5` = tgrob_5,
+    `TGROB 6` = tgrob_6, `TGROB 7` = tgrob_7, `TGROB 8` = tgrob_8, `TGROB 9` = tgrob_9, `TGROB 10` = tgrob_10,
+    TNLOC_H = tnloc_h, TNLOC_ES = tnloc_es, TNLOC_D = tnloc_d, TNLOC_O = tnloc_o, TNLOC_AI = tnloc_ai,
+    `TRS M` = trs_m, TRS_F = trs_f, TRRC_B = trrc_b, TRRC_PT = trrc_pt, `TRRC A` = trrc_a, `TRRC PD` = trrc_pd, TRRC_I = trrc_i,
+    `TRP BP` = trp_bp, TRP_N = trp_n, TRP_M = trp_m,
+    PESO_P25 = peso_p25, `PESO P50` = peso_p50, PESO_P75 = peso_p75, `PESO MD` = peso_md, `PESO DP` = peso_dp,
+    `TRPIG P` = trpig_p, TRPIG_A = trpig_a, `TRPIG G` = trpig_g,
+    `TRAPG5 B` = trapg5_b, `TRAPG5 N` = trapg5_n, APG5_MD = apg5_md, APG5_DP = apg5_dp,
+    TRAC = trac, TRSAC = trsac,
+    check.names = FALSE
+  )
+}
+
+linha_uf_sc <- calcular_indicadores_sinasc(dados_sinasc_2, dados_sinasc, ano = 2016, nivel = "UF", cod_mun = 42)
+
+municipios_sc <- unique(dados_sinasc_2$CODMUNRES)
+municipios_sc <- municipios_sc[!is.na(municipios_sc)]
+
+linhas_municipios <- do.call(rbind, lapply(municipios_sc, function(m) {
+  sub_df <- dados_sinasc_2[dados_sinasc_2$CODMUNRES == m, ]
+  calcular_indicadores_sinasc(sub_df, dados_sinasc, ano = 2016, nivel = "MUNICIPIO", cod_mun = m)
+}))
+
+SINASC_SC <- rbind(linha_uf_sc, linhas_municipios)
 
 # Ao terminar a Tarefa 9 commit com a mensagem "script BDEM - SINASC - tarefas 1 a 9" e envie para o repositório Projeto_BDEM_2016
 
