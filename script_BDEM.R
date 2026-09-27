@@ -127,7 +127,7 @@ dados_sinasc_1 <- dados_sinasc[, cols_selecionadas]
 # 41: 155066    42: 95313     43: 141411
 # 50: 42432     51: 53531     52: 95563     53: 43340 
 
-dados_sinasc_2 <- dados_sinasc_1[substr(as.character(dados_sinasc_1$CODMUNRES), 1, 2) == "33", ]
+dados_sinasc_2 <- dados_sinasc_1[substr(as.character(dados_sinasc_1$CODMUNRES), 1, 2) == "42", ]
 
 # Ao terminar a Tarefa 3 commit com a mensagem "script BDEM - SINASC - tarefas 1 a 3" e envie para o repositório Projeto_BDEM_2016
 
@@ -187,6 +187,64 @@ summary(dados_sinasc_2[, c("LOCNASC", "ESTCIVMAE", "SEXO", "TPROBSON", "KOTELCHU
 # ATENçÃO: 1. Na hora de escrever os labels, somente a primeira letra da legenda é maiúscula. Exemplo para SEXO: Feminino e Masculino
 #          2. Nesta Tarefa 6 não crie novas variáveis dentro do banco de dados
 
+# LOCNASC
+dados_sinasc_2$LOCNASC <- factor(dados_sinasc_2$LOCNASC, levels = c(1, 2, 3, 4, 5),
+                                 labels = c("Hospital", "Outro estabelecimento de saúde", "Domicílio", "Outro", "Aldeia indígena"))
+
+# ESTCIVMAE
+dados_sinasc_2$ESTCIVMAE <- factor(dados_sinasc_2$ESTCIVMAE, levels = c(1, 2, 3, 4, 5),
+                                   labels = c("Solteira", "Casada", "Viúva", "Separada judicialmente/divorciada", "União estável"))
+
+# GESTACAO
+dados_sinasc_2$GESTACAO <- factor(dados_sinasc_2$GESTACAO, levels = c(1, 2, 3, 4, 5, 6),
+                                  labels = c("Menos de 22 semanas", "22 a 27 semanas", "28 a 31 semanas", "32 a 36 semanas", "37 a 41 semanas", "42 semanas e mais"))
+
+# GRAVIDEZ
+dados_sinasc_2$GRAVIDEZ <- factor(dados_sinasc_2$GRAVIDEZ, levels = c(1, 2, 3),
+                                  labels = c("Única", "Dupla", "Tripla e mais"))
+
+# PARTO
+dados_sinasc_2$PARTO <- factor(dados_sinasc_2$PARTO, levels = c(1, 2),
+                               labels = c("Vaginal", "Cesáreo"))
+
+# SEXO
+dados_sinasc_2$SEXO <- factor(dados_sinasc_2$SEXO, levels = c(1, 2),
+                              labels = c("Masculino", "Feminino"))
+
+# RACACOR
+dados_sinasc_2$RACACOR <- factor(dados_sinasc_2$RACACOR, levels = c(1, 2, 3, 4, 5),
+                                 labels = c("Branca", "Preta", "Amarela", "Parda", "Indígena"))
+
+# IDANOMAL
+dados_sinasc_2$IDANOMAL <- factor(dados_sinasc_2$IDANOMAL, levels = c(1, 2),
+                                  labels = c("Sim", "Não"))
+
+# ESCMAE2010
+dados_sinasc_2$ESCMAE2010 <- factor(dados_sinasc_2$ESCMAE2010, levels = c(0, 1, 2, 3, 4, 5),
+                                    labels = c("Sem escolaridade", "Fundamental I", "Fundamental II", "Médio", "Superior incompleto", "Superior completo"))
+
+# RACACORMAE
+dados_sinasc_2$RACACORMAE <- factor(dados_sinasc_2$RACACORMAE, levels = c(1, 2, 3, 4, 5),
+                                    labels = c("Branca", "Preta", "Amarela", "Parda", "Indígena"))
+
+# TPAPRESENT
+dados_sinasc_2$TPAPRESENT <- factor(dados_sinasc_2$TPAPRESENT, levels = c(1, 2, 3),
+                                    labels = c("Cefálica", "Pélvica ou podálica", "Transversa"))
+
+# TPROBSON
+dados_sinasc_2$TPROBSON <- factor(dados_sinasc_2$TPROBSON, levels = 1:10,
+                                  labels = c("Grupo 1", "Grupo 2", "Grupo 3", "Grupo 4", "Grupo 5",
+                                             "Grupo 6", "Grupo 7", "Grupo 8", "Grupo 9", "Grupo 10"))
+
+# PARIDADE (0: Nulípara, 1: Multípara)
+dados_sinasc_2$PARIDADE <- factor(dados_sinasc_2$PARIDADE, levels = c(0, 1),
+                                  labels = c("Nulípara", "Multípara"))
+
+# KOTELCHUCK
+dados_sinasc_2$KOTELCHUCK <- factor(dados_sinasc_2$KOTELCHUCK, levels = c(1, 2, 3, 4, 5),
+                                    labels = c("Não realizou pré-natal", "Inadequado", "Intermediário", "Adequado", "Mais que adequado"))
+
+str(dados_sinasc_2[, c("LOCNASC", "ESTCIVMAE", "SEXO", "RACACOR", "KOTELCHUCK")])
 
 # Ao terminar a Tarefa 6 commit com a mensagem "script BDEM - SINASC - tarefas 1 a 6" e envie para o repositório Projeto_BDEM_2016
 
@@ -200,16 +258,79 @@ summary(dados_sinasc_2[, c("LOCNASC", "ESTCIVMAE", "SEXO", "TPROBSON", "KOTELCHU
 # nova variável: dados_sinasc_2$ESTCIV: Sem companheiro: ESTCIVMAE 1, 3 ou 4, Com companheiro: ESTCIVMAE 2 ou 5
 # Ao categorizar as variáveis, garantir que sejam transformadas em tipo fator
 
+dados_sinasc_2$F_PESO <- cut(
+  dados_sinasc_2$PESO,
+  breaks = c(-Inf, 2499, 3999, Inf),
+  labels = c("Baixo peso", "Peso normal", "Macrossomia"),
+  right = TRUE
+)
+
+dados_sinasc_2$F_IDADE <- cut(
+  dados_sinasc_2$IDADEMAE,
+  breaks = c(-Inf, 14, 19, 24, 29, 34, 39, 44, 49, Inf),
+  labels = c("<15", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50+"),
+  right = TRUE
+)
+
+dados_sinasc_2$F_APGAR5 <- cut(
+  dados_sinasc_2$APGAR5,
+  breaks = c(-Inf, 6, Inf),
+  labels = c("Baixo", "Normal"),
+  right = TRUE
+)
+
+dados_sinasc_2$PEREG <- ifelse(
+  dados_sinasc_2$CODMUNNASC == dados_sinasc_2$CODMUNRES,
+  "Não",
+  "Sim"
+)
+dados_sinasc_2$PEREG <- factor(dados_sinasc_2$PEREG, levels = c("Não", "Sim"))
+
+dados_sinasc_2$ESTCIV <- ifelse(
+  dados_sinasc_2$ESTCIVMAE %in% c("Solteira", "Viúva", "Separada judicialmente/divorciada"),
+  "Sem companheiro",
+  ifelse(dados_sinasc_2$ESTCIVMAE %in% c("Casada", "União estável"), "Com companheiro", NA)
+)
+dados_sinasc_2$ESTCIV <- factor(dados_sinasc_2$ESTCIV, levels = c("Sem companheiro", "Com companheiro"))
+
+str(dados_sinasc_2[, c("F_PESO", "F_IDADE", "F_APGAR5", "PEREG", "ESTCIV")])
+summary(dados_sinasc_2[, c("F_PESO", "F_IDADE", "F_APGAR5", "PEREG", "ESTCIV")])
 
 # Ao terminar a Tarefa 7 commit com a mensagem "script BDEM - SINASC - tarefas 1 a 7" e envie para o repositório Projeto_BDEM_2016
 
 
 # Tarefa 8. Agregar ao banco de dados_sinasc_2 as informações PESO_P10 e PESO_P90 a partir de Tabela_PIG_Brasil.csv
+
+tabela_pig <- read.csv2("Tabela_PIG_Brasil.csv", stringsAsFactors = FALSE)
+names(tabela_pig) <- toupper(names(tabela_pig))
+
 # a Tabela PIG informa P10 e P90 dos pesos, de acordo com a idade gestacional
+
+dados_sinasc_2 <- merge(
+  dados_sinasc_2,
+  tabela_pig[, c("SEMAGESTAC", "SEXO", "PESO_P10", "PESO_P90")],
+  by = c("SEMAGESTAC", "SEXO"),
+  all.x = TRUE
+)
+
+dados_sinasc_2 <- dados_sinasc_2[order(dados_sinasc_2$CONTADOR), ]
+
 # Criar nova variável referente ao peso, de acordo com a idade gestacional, conforme indicado abaixo
 # nova variável apenas para casos de GRAVIDEZ Única: dados_sinasc_2$F_PIG: PIG: PESO < PESO_P10, AIG: PESO_P10 <= PESO <= PESO_P90, GIG: PESO > PESO_P90
 # Atenção para casos de NA em SEMAGESTAC, PESO ou SEXO. Lembre-se também que em dados_sinasc_2 SEXO está como fator com as categorias Feminino e Masculino.
 
+dados_sinasc_2$F_PIG <- NA
+
+cond_unica <- !is.na(dados_sinasc_2$GRAVIDEZ) & dados_sinasc_2$GRAVIDEZ == "Única"
+cond_valida <- cond_unica & !is.na(dados_sinasc_2$PESO) & !is.na(dados_sinasc_2$PESO_P10) & !is.na(dados_sinasc_2$PESO_P90)
+
+dados_sinasc_2$F_PIG[cond_valida & dados_sinasc_2$PESO < dados_sinasc_2$PESO_P10] <- "PIG"
+dados_sinasc_2$F_PIG[cond_valida & dados_sinasc_2$PESO >= dados_sinasc_2$PESO_P10 & dados_sinasc_2$PESO <= dados_sinasc_2$PESO_P90] <- "AIG"
+dados_sinasc_2$F_PIG[cond_valida & dados_sinasc_2$PESO > dados_sinasc_2$PESO_P90] <- "GIG"
+
+dados_sinasc_2$F_PIG <- factor(dados_sinasc_2$F_PIG, levels = c("PIG", "AIG", "GIG"))
+
+table(dados_sinasc_2$F_PIG, useNA = "always")
 
 # Ao terminar a Tarefa 8 commit com a mensagem "script BDEM - SINASC - tarefas 1 a 8" e envie para o repositório Projeto_BDEM_2016
 
@@ -287,24 +408,6 @@ summary(dados_sinasc_2[, c("LOCNASC", "ESTCIVMAE", "SEXO", "TPROBSON", "KOTELCHU
 # Tarefa 2: Manipular o banco de dados e criar o banco de dados ATLAS_UF
 
 # Criar o banco UF_codigo tipo tabela de correspondência
-UF_codigo = data.frame(
-  UF = c("Rondônia","Acre","Amazonas","Roraima","Pará","Amapá","Tocantins",
-         "Maranhão","Piauí","Ceará","Rio Grande do Norte","Paraíba",
-         "Pernambuco","Alagoas","Sergipe","Bahia","Minas Gerais",
-         "Espírito Santo","Rio de Janeiro","São Paulo","Paraná",
-         "Santa Catarina","Rio Grande do Sul","Mato Grosso do Sul",
-         "Mato Grosso","Goiás","Distrito Federal"),
-  
-  SIGLA = c("RO","AC","AM","RR","PA","AP","TO",
-            "MA","PI","CE","RN","PB","PE","AL",
-            "SE","BA","MG","ES","RJ","SP",
-            "PR","SC","RS","MS","MT","GO","DF"),
-  
-  CODUF = c(11,12,13,14,15,16,17,
-            21,22,23,24,25,26,27,
-            28,29,31,32,33,35,
-            41,42,43,50,51,52,53)
-)
 
 # Retirar de dados_atlas_1 a linha do Brasil e adicionar (com merge by UF) as colunas de UF_codigo
 
