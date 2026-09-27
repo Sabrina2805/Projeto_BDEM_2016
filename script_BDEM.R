@@ -511,7 +511,9 @@ linhas_municipios <- do.call(rbind, lapply(municipios_sc, function(m) {
   calcular_indicadores_sinasc(sub_df, dados_sinasc, ano = 2016, nivel = "MUNICIPIO", cod_mun = m)
 }))
 
-SINASC_SC <- rbind(linha_uf_sc, linhas_municipios)
+SINASC_SC <- rbind(linha_uf_sc, linhas_municipios);
+
+rownames(SINASC_SC) <- NULL;
 
 # Ao terminar a Tarefa 9 commit com a mensagem "script BDEM - SINASC - tarefas 1 a 9" e envie para o repositório Projeto_BDEM_2016
 
