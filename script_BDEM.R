@@ -234,6 +234,7 @@ dim(dados_sidra_4)
 
 dados_sidra_1$CODUF <- substr(as.character(dados_sidra_1[, 1]), 1, 2)
 dados_sidra_2$CODUF <- substr(as.character(dados_sidra_2[, 1]), 1, 2)
+dados_sidra_3$CODUF <- substr(as.character(dados_sidra_3[, 1]), 1, 2)
 dados_sidra_4$CODUF <- substr(as.character(dados_sidra_4[, 1]), 1, 2)
 
 # Ao terminar a Tarefa 2 commit com a mensagem "script BDEM - SIDRA - tarefas 1 a 2" e envie para o repositório Projeto_BDEM_2016
@@ -242,6 +243,12 @@ dados_sidra_4$CODUF <- substr(as.character(dados_sidra_4[, 1]), 1, 2)
 # Tarefa 3. Selecionar em dados_sidra_ 1 a dados_sidra_4 a UF de responsabilidade do aluno 
 # e chamar os bancos de dados, respectivamente por sidra_1, sidra_2, sidra_3 e sidra_4
 
+uf_aluno <- "42"
+
+sidra_1 <- subset(dados_sidra_1, CODUF == uf_aluno)
+sidra_2 <- subset(dados_sidra_2, CODUF == uf_aluno)
+sidra_3 <- subset(dados_sidra_3, CODUF == uf_aluno)
+sidra_4 <- subset(dados_sidra_4, CODUF == uf_aluno)
 
 # Ao terminar a Tarefa 3 commit com a mensagem "script BDEM - SIDRA - tarefas 1 a 3" e envie para o repositório Projeto_BDEM_2016
 
