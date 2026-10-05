@@ -209,14 +209,13 @@
 library(readr)
 
 dados_sidra_1 <- read.csv2("população residente estimada - UF e municípios - 2016 - SIDRA - tabela_6579.csv", fileEncoding = "latin1", stringsAsFactors = FALSE)
-dados_sidra_2 <- read.csv2("população residente censo 2010 - UF e municípios - total e por sexo - SIDRA - tabela_1552.csv", fileEncoding = "latin1", stringsAsFactors = FALSE)
-dados_sidra_3 <- read.csv2("população residente censo 2010 - por faixa etária e sexo - municípios - SIDRA - tabela_1552.csv", fileEncoding = "latin1", stringsAsFactors = FALSE)
-dados_sidra_4 <- read.csv2("população residente censo 2010 - por faixa etária - UF - SIDRA - tabela_1552.csv", fileEncoding = "latin1", stringsAsFactors = FALSE)
+dados_sidra_2 <- read_delim("população residente censo 2010 - UF e municípios - total e por sexo - SIDRA - tabela_1552.csv", delim = ";", locale = locale(encoding = "UTF-8"))
+dados_sidra_3 <- read_delim("população residente censo 2010 - por faixa etária e sexo - municípios - SIDRA - tabela_1552.csv", delim = ";", locale = locale(encoding = "UTF-8"))
+dados_sidra_4 <- read_delim("população residente censo 2010 - por faixa etária - UF - SIDRA - tabela_1552.csv", delim = ";", locale = locale(encoding = "UTF-8"))
 
-head(dados_sidra_1)
-head(dados_sidra_2)
-head(dados_sidra_3)
-head(dados_sidra_4)
+dados_sidra_2 <- as.data.frame(dados_sidra_2)
+dados_sidra_3 <- as.data.frame(dados_sidra_3)
+dados_sidra_4 <- as.data.frame(dados_sidra_4)
 
 str(dados_sidra_1)
 str(dados_sidra_2)
@@ -233,6 +232,9 @@ dim(dados_sidra_4)
 
 # Tarefa 2. Criar uma nova variável de nome CODUF com os códigos da UF nos bancos dados_sidra_1, dados_sidra_2, dados_sidra_4
 
+dados_sidra_1$CODUF <- substr(as.character(dados_sidra_1[, 1]), 1, 2)
+dados_sidra_2$CODUF <- substr(as.character(dados_sidra_2[, 1]), 1, 2)
+dados_sidra_4$CODUF <- substr(as.character(dados_sidra_4[, 1]), 1, 2)
 
 # Ao terminar a Tarefa 2 commit com a mensagem "script BDEM - SIDRA - tarefas 1 a 2" e envie para o repositório Projeto_BDEM_2016
 
