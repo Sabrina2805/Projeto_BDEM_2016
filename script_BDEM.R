@@ -300,6 +300,9 @@ SIDRA_SC <- sidra_1 %>%
 
 
 # Tarefa 5:Exportar o banco de dados com o nome SIDRA_UF.csv (Exemplo: SIDRA_RJ.csv)
+
+write.csv2(SIDRA_SC, file = "SIDRA_SC.csv", row.names = FALSE, fileEncoding = "UTF-8")
+
 # Ao terminar a Tarefa 5 commit com o comentário "dados SIDRA_UF 2016 e script - SIDRA - tarefas 1 a 5"  e envie para o repositório Projeto_BDEM_2016
 
 
