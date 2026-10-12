@@ -803,7 +803,7 @@ ATLAS_UF <- bind_rows(linha_estado_SC, ATLAS_MUNICIPIO)
 # Tarefa 3. Exportar o banco de dados com o nome ATLAS_UF.csv (Exemplo: ATLAS_RJ.csv)
 # Ao terminar a Tarefa 3 commit com o comentário "dados ATLAS_UF 2016 e script - ATLAS - tarefas 1 a 3"  e envie para o repositório Projeto_BDEM_2016
 
-
+write_csv2(ATLAS_UF, "ATLAS_SC.csv")
 
 ####################################
 # ETAPA 5: BANCOS DE DADOS DO SINISA
