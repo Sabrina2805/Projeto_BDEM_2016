@@ -684,33 +684,118 @@ head(dados_atlas_2)
 
 # Criar o banco UF_codigo tipo tabela de correspondência
 
+UF_codigo <- tibble(
+  CODUF = c(11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 35, 41, 42, 43, 50, 51, 52, 53),
+  SIGLA = c("RO", "AC", "AM", "RR", "PA", "AP", "TO", "MA", "PI", "CE", "RN", "PB", "PE", "AL", "SE", "BA", "MG", "ES", "RJ", "SP", "PR", "SC", "RS", "MS", "MT", "GO", "DF"),
+  UF = c("Rondônia", "Acre", "Amazonas", "Roraima", "Pará", "Amapá", "Tocantins", 
+         "Maranhão", "Piauí", "Ceará", "Rio Grande do Norte", "Paraíba", "Pernambuco", 
+         "Alagoas", "Sergipe", "Bahia", "Minas Gerais", "Espírito Santo", 
+         "Rio de Janeiro", "São Paulo", "Paraná", "Santa Catarina", "Rio Grande do Sul", 
+         "Mato Grosso do Sul", "Mato Grosso", "Goiás", "Distrito Federal")
+)
+
 # Retirar de dados_atlas_1 a linha do Brasil e adicionar (com merge by UF) as colunas de UF_codigo
+
+dados_atlas_1_filt <- dados_atlas_1 %>% 
+  filter(UF != "Brasil") %>% 
+  left_join(UF_codigo, by = "UF")
 
 # Criar o banco linha_estado somente com as linhas da UF e com as seguintes colunas:
 # ANO=2016, NIVEL=UF, CODMUNRES, IDHM_A, IDHM_CA, IDHM_CA_M e IDHM_CA_F 
 
+linha_estado <- dados_atlas_1_filt %>% 
+  mutate(
+    ANO = 2016,
+    NIVEL = "UF",
+    CODMUNRES = as.character(CODUF),
+    IDHM_A    = IDHM_2010,
+    IDHM_CA   = IDHM_2016,
+    IDHM_CA_M = IDHM_2016_M,
+    IDHM_CA_F = IDHM_2016_F
+  ) %>% 
+  select(ANO, NIVEL, CODMUNRES, IDHM_A, IDHM_CA, IDHM_CA_M, IDHM_CA_F)
+
 # Selecionar de linha_estado a UF da responsabilidade do aluno por CODMUNRES
 
-# Criar em dados_atlas_2 a coluna com UF
+cod_uf_aluno <- "42"
 
+linha_estado_SC <- linha_estado %>% 
+  filter(CODMUNRES == cod_uf_aluno)
+
+# Criar em dados_atlas_2 a coluna com UF
 # Retirar (UF) da variável município
+
+dados_atlas_2 <- dados_atlas_2 %>% 
+  mutate(
+    UF = str_extract(município, "(?<=\\().+?(?=\\))"),
+    município = str_trim(str_remove(município, "\\s*\\(.*\\)"))
+  )
 
 # Acrescentar em codigos_IBGE_2010 a variável CODUF baseado nos dois primeiros dígitos de CODMUNRES
 
+codigos_IBGE_2010 <- codigos_IBGE_2010 %>% 
+  mutate(
+    CODMUNRES = as.character(CODMUNRES),
+    CODUF = as.numeric(substr(CODMUNRES, 1, 2))
+  )
+
 # Acrescentar a codigos_IBGE_2010 as variáveis de UF_codigo (merge by CODUF)
+
+codigos_IBGE_2010 <- codigos_IBGE_2010 %>% 
+  left_join(UF_codigo, by = "CODUF")
 
 # Associar dados_atlas_2 a codigos_IBGE_2010 e nomear o novo arquivo por atlas_municipio
 # Neste caso o merge será by.x = c("município","UF") e by.y = c("município","SIGLA")
 
+atlas_municipio <- merge(
+  x = dados_atlas_2, 
+  y = codigos_IBGE_2010, 
+  by.x = c("município", "UF"), 
+  by.y = c("município", "SIGLA")
+)
+
 # Remover de atlas_municipio a coluna UF.y criada no merge
 
+atlas_municipio <- atlas_municipio %>% 
+  select(-matches("UF\\.y"))
+
 # Selecionar somente a UF de responsabilidade do aluno através dos dois primeiros dógitos de CODMUNRES
+
+atlas_municipio_SC <- atlas_municipio %>% 
+  filter(substr(as.character(CODMUNRES), 1, 2) == "42")
 
 # Criar banco ATLAS_MUNICIPIO com as linhas dos municípios e com as seguintes variáveis:
 # ANO=2016, NIVEL=MUNICIPIO, CODMUNRES, IDHM_A=NA, IDHM_CA, IDHM_CA_M=NA, IDHM_CA_F=NA
 
+ATLAS_MUNICIPIO <- atlas_municipio_SC %>% 
+  mutate(
+    ANO = 2016,
+    NIVEL = "MUNICIPIO",
+    CODMUNRES = as.character(CODMUNRES),
+    IDHM_A    = NA_real_,
+    IDHM_CA   = IDHM_2010,
+    IDHM_CA_M = NA_real_,
+    IDHM_CA_F = NA_real_
+  ) %>% 
+  select(ANO, NIVEL, CODMUNRES, IDHM_A, IDHM_CA, IDHM_CA_M, IDHM_CA_F)
+
 # Criar banco final ATLAS_UF "juntando" os bancos linha_estado e ATLAS_MUNICIPIO
 
+# Converter colunas de IDHM do linha_estado_SC para numéricas
+
+linha_estado_SC <- linha_estado_SC %>% 
+  mutate(
+    IDHM_A    = as.numeric(IDHM_A),
+    IDHM_CA   = as.numeric(IDHM_CA),
+    IDHM_CA_M = as.numeric(IDHM_CA_M),
+    IDHM_CA_F = as.numeric(IDHM_CA_F)
+  )
+
+ATLAS_MUNICIPIO <- ATLAS_MUNICIPIO %>% 
+  mutate(IDHM_CA = as.numeric(gsub(",", ".", IDHM_CA)))
+
+
+ATLAS_UF <- bind_rows(linha_estado_SC, ATLAS_MUNICIPIO)
 
 # Ao terminar a Tarefa 2 commit com a mensagem "script BDEM - ATLAS - tarefas 1 a 2" e envie para o repositório Projeto_BDEM_2016
 
