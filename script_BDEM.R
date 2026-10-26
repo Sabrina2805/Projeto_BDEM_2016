@@ -1035,6 +1035,8 @@ BDEM_SC <- merge(BDEM_SC, SINISA_SC, by = c("CODMUNRES", "ANO", "NIVEL"), all = 
 
 dim(BDEM_SC)
 
+write.csv2(BDEM_SC, "BDEM_SC.csv", row.names = FALSE)
+
 # Ao terminar a Tarefa 1 commit com a mensagem "script BDEM - BDEM - tarefa 1" e envie para o repositório Projeto_BDEM_2016
 
 # Tarefa 2: Inserir os seguintes indicadores epidemiológicos (com apenas dias casas decimais) no BDEM_UF:
@@ -1050,8 +1052,24 @@ dim(BDEM_SC)
 
 # Conferir o banco BDEM_UF após inserção dos indicadores
 
-# Ao terminar a Tarefa 2 commit com a mensagem "script BDEM - BDEM - tarefas 1 a 2" e envie para o repositório Projeto_BDEM_2016
+BDEM_SC <- BDEM_SC %>%
+  mutate(
+    TFG = round((TN / POPRC_F_15_49) * 1000, 2),
+    TMG = round((TO / POPRC_T) * 1000, 2),
+    RMM = round((TO_MT / TN) * 100000, 2),
+    TMM = round((TO_MT / POPRC_F_15_49) * 100000, 2),
+    TMM_P = round((TO_MT_42 / TN) * 100000, 2),
+    TMN = round((TO_NT / TN) * 1000, 2),
+    TMN_P = round((TO_NT_P / TN) * 1000, 2),
+    TMN_T = round((TO_NT_T / TN) * 1000, 2),
+    TMI = round((TO_N / TN) * 1000, 2)
+  )
 
+BDEM_SC %>% 
+  select(CODMUNRES, ANO, TFG, TMG, RMM, TMM, TMM_P, TMN, TMN_P, TMN_T, TMI) %>% 
+  head(10)
+
+# Ao terminar a Tarefa 2 commit com a mensagem "script BDEM - BDEM - tarefas 1 a 2" e envie para o repositório Projeto_BDEM_2016
 
 # Tarefa 3: Exportar o banco de dados com o nome BDEM_UF.csv (Exemplo: BDEM_RJ.csv)
 # Ao terminar a Tarefa 3 commit com o comentário "dados BDEM_UF 2016 e script - BDEM - tarefas 1 a 3"  e enviar para o repositório Projeto_BDEM_2016
