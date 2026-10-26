@@ -1015,11 +1015,25 @@ write.csv2(SINISA_UF, "SINISA_SC.csv", row.names = FALSE)
 # Lembre-se que SIDRA e ATLAS tem CODMUNRES com 7 dígitos e SINASC, SIM e SINISA com 6 dígitos
 # Além disso dentro do merge all = TRUE garante a manutenção de qualquer município presente em um dos bancos envolvidos no merge
 
-SIDRA_SC  <- read.csv("SIDRA_SC.csv")
+SIDRA_SC  <- read_csv2("SIDRA_SC.csv")
 ATLAS_SC <- read_csv2("ATLAS_SC.csv")
 SINASC_SC <- read.csv("SINASC_SC.csv")
 SIM_SC    <- read_csv2("SIM_SC.csv")
-SINISA_SC <- read.csv("SINISA_SC.csv")
+SINISA_SC <- read_csv2("SINISA_SC.csv")
+
+SIDRA_SC$CODMUNRES  <- as.numeric(substr(as.character(SIDRA_SC$CODMUNRES), 1, 6))
+ATLAS_SC$CODMUNRES  <- as.numeric(substr(as.character(ATLAS_SC$CODMUNRES), 1, 6))
+
+SINASC_SC$CODMUNRES <- as.numeric(as.character(SINASC_SC$CODMUNRES))
+SIM_SC$CODMUNRES    <- as.numeric(as.character(SIM_SC$CODMUNRES))
+SINISA_SC$CODMUNRES <- as.numeric(as.character(SINISA_SC$CODMUNRES))
+
+BDEM_SC <- merge(SIDRA_SC, ATLAS_SC, by = c("CODMUNRES", "ANO", "NIVEL"), all = TRUE)
+BDEM_SC <- merge(BDEM_SC, SINASC_SC, by = c("CODMUNRES", "ANO", "NIVEL"), all = TRUE)
+BDEM_SC <- merge(BDEM_SC, SIM_SC, by = c("CODMUNRES", "ANO", "NIVEL"), all = TRUE)
+BDEM_SC <- merge(BDEM_SC, SINISA_SC, by = c("CODMUNRES", "ANO", "NIVEL"), all = TRUE)
+
+dim(BDEM_SC)
 
 # Ao terminar a Tarefa 1 commit com a mensagem "script BDEM - BDEM - tarefa 1" e envie para o repositório Projeto_BDEM_2016
 
