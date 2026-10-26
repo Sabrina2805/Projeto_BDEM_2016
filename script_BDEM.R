@@ -16,6 +16,14 @@
 # Tarefa 1. Leitura do banco de dados SIM_2016 com 1309774 linhas e 87 colunas com o nome de dados_sim
 # Verificar se a leitura foi feita corretamente e a estrutura dos dados
 
+library(readr)
+library(dplyr)
+
+dados_sim <- read.csv2("SIM_2016.csv", stringsAsFactors = FALSE)
+
+dim(dados_sim)
+str(dados_sim)
+head(dados_sim)
 
 # Ao terminar a Tarefa 1 commit com a mensagem "script BDEM - SIM - tarefa 1" e envie para o repositório Projeto_BDEM_2016
 
@@ -24,6 +32,12 @@
 # As colunas serão: 1, 3, 9, 10, 11, 14, 17, 35, 47
 # Nomes das respectivas variáveis: CONTADOR, TIPOBITO, IDADE, SEXO, RACACOR, ESC2010, CODMUNRES, TPMORTEOCO, CAUSABAS
 
+cols_indices <- c(1, 3, 9, 10, 11, 14, 17, 35, 47)
+cols_nomes   <- c("CONTADOR", "TIPOBITO", "IDADE", "SEXO", "RACACOR", 
+                  "ESC2010", "CODMUNRES", "TPMORTEOCO", "CAUSABAS")
+
+dados_sim_1 <- dados_sim[, cols_indices]
+colnames(dados_sim_1) <- cols_nomes
 
 # Ao terminar a Tarefa 2 commit com a mensagem "script BDEM - SIM - tarefas 1 a 2" e envie para o repositório Projeto_BDEM_2016
 
@@ -40,6 +54,12 @@
 # 41:74740     42:40270    43:87583
 # 50:16749     51:17535    52:38074    53:12050 
 
+uf_codigo <- "42"
+
+dados_sim_2 <- dados_sim_1 %>% 
+  filter(substr(as.character(CODMUNRES), 1, 2) == uf_codigo)
+
+nrow(dados_sim_2)
 
 # Ao terminar a Tarefa 3 commit com a mensagem "script BDEM - SIM - tarefas 1 a 3" e envie para o repositório Projeto_BDEM_2016
 
@@ -51,6 +71,14 @@
 # Atenção: a unidade de medida de IDADE no DICIONÀRIO do SIM está errada
 # O propósito das avaliações acima é verificar se as categorias estão de acordo com o dicionário do SIM ou se aparecem categorias estranhas
 
+table(dados_sim_2$TIPOBITO, useNA = "ifany")
+table(dados_sim_2$SEXO, useNA = "ifany")
+table(dados_sim_2$RACACOR, useNA = "ifany")
+table(dados_sim_2$ESC2010, useNA = "ifany")
+table(dados_sim_2$TPMORTEOCO, useNA = "ifany")
+head(table(dados_sim_2$CAUSABAS), 20)
+
+summary(as.numeric(dados_sim_2$IDADE))
 
 # Ao terminar a Tarefa 4 commit com a mensagem "script BDEM - SIM - tarefas 1 a 4" e envie para o repositório Projeto_BDEM_2016
 
@@ -60,6 +88,12 @@
 # Verifique o dicionário do SIM para identificar qual o código das categorias de cada variável
 # Em variáveis quantitativas como IDADE verificar se existem valores como 9999 para NA
 
+dados_sim_2$SEXO[dados_sim_2$SEXO == 0 | dados_sim_2$SEXO == 9] <- NA
+dados_sim_2$RACACOR[dados_sim_2$RACACOR == 9] <- NA
+dados_sim_2$ESC2010[dados_sim_2$ESC2010 == 9] <- NA
+dados_sim_2$TPMORTEOCO[dados_sim_2$TPMORTEOCO == 9] <- NA
+
+dados_sim_2$IDADE[dados_sim_2$IDADE %in% c("999", "9999", "9")] <- NA
 
 # Ao terminar a Tarefa 5 commit com a mensagem "script BDEM - SIM - tarefas 1 a 5" e envie para o repositório Projeto_BDEM_2016
 
@@ -70,6 +104,11 @@
 # ATENçÃO: 1. Na hora de escrever os labels, somente a PRIMEIRA LETRA da legenda é maiúscula. Exemplo para SEXO: Feminino e Masculino
 #          2. Nesta Tarefa 6 não crie novas variáveis dentro do banco de dados
 
+dados_sim_2$TIPOBITO <- factor(
+  dados_sim_2$TIPOBITO, 
+  levels = c(1, 2), 
+  labels = c("Fetal", "Não fetal")
+)
 
 # Ao terminar a Tarefa 6 commit com a mensagem "script BDEM - SIM - tarefas 1 a 6" e envie para o repositório Projeto_BDEM_2016
 
@@ -77,11 +116,101 @@
 # Tarefa 7. Criar um banco de dados, de nome SIM_UF.csv (Exemplo: SIM_RJ.csv), contendo as variáveis listadas no arquivo “Variáveis - Projeto - Tarefa 7 - SIM.pdf”
 # Atenção: a ordem das variáveis do arquivo deve ser respeitada
 
+converte_idade_dias <- function(idade) {
+  idade_num <- as.numeric(as.character(idade))
+  prefixo <- floor(idade_num / 100)
+  valor <- idade_num %% 100
+  case_when(
+    prefixo == 1 ~ 0,
+    prefixo == 2 ~ valor,
+    prefixo == 3 ~ valor * 30.4375,
+    prefixo == 4 ~ valor * 365.25,
+    TRUE ~ NA_real_
+  )
+}
+
+converte_idade_anos <- function(idade) {
+  idade_num <- as.numeric(as.character(idade))
+  prefixo <- floor(idade_num / 100)
+  valor <- idade_num %% 100
+  case_when(
+    prefixo == 4 ~ valor,
+    prefixo %in% 1:3 ~ 0,
+    TRUE ~ NA_real_
+  )
+}
+
+dados_sim_prep <- dados_sim_2 %>%
+  mutate(
+    idade_dias = converte_idade_dias(IDADE),
+    idade_anos = converte_idade_anos(IDADE),
+    capitulo_cid = substr(CAUSABAS, 1, 1)
+  )
+
+SIM_SC <- dados_sim_prep %>%
+  group_by(CODMUNRES) %>%
+  summarise(
+    ANO = 2016,
+    NIVEL = "MUNICIPIO",
+    CODMUNRES = unique(CODMUNRES),
+    TO = n(),
+    TORC = sum(complete.cases(dados_sim[dados_sim$CODMUNRES == unique(CODMUNRES), ]), na.rm = TRUE),
+    TORCR = sum(!is.na(TIPOBITO) & !is.na(IDADE) & !is.na(SEXO) & !is.na(RACACOR) & 
+                  !is.na(ESC2010) & !is.na(CODMUNRES) & !is.na(TPMORTEOCO) & !is.na(CAUSABAS)),
+    TO_NN = sum(capitulo_cid %in% c("V", "W", "X", "Y"), na.rm = TRUE),
+    TO_N = sum(!capitulo_cid %in% c("V", "W", "X", "Y") & !is.na(CAUSABAS), na.rm = TRUE),
+    TO_CBI = sum(capitulo_cid %in% c("A", "B"), na.rm = TRUE),
+    TO_CB_N = sum(capitulo_cid %in% c("C", "D"), na.rm = TRUE),
+    TO_CB_C = sum(capitulo_cid == "I", na.rm = TRUE),
+    TO_CB_R = sum(capitulo_cid == "J", na.rm = TRUE),
+    TO_CB_O = sum(!capitulo_cid %in% c("A", "B", "C", "D", "I", "J", "V", "W", "X", "Y") & !is.na(CAUSABAS), na.rm = TRUE),
+    TO_M = sum(SEXO == 1, na.rm = TRUE),
+    TO_F = sum(SEXO == 2, na.rm = TRUE),
+    TO_F_IF = sum(SEXO == 2 & idade_anos >= 15 & idade_anos <= 49, na.rm = TRUE),
+    TO_FT = sum(TIPOBITO == "Fetal", na.rm = TRUE),
+    TO_NT = sum(idade_dias >= 0 & idade_dias <= 27, na.rm = TRUE),
+    TO_NT_P = sum(idade_dias >= 0 & idade_dias <= 6, na.rm = TRUE),
+    TO_NT_T = sum(idade_dias >= 7 & idade_dias <= 27, na.rm = TRUE),
+    TO_PNT = sum(idade_dias >= 28 & idade_dias <= 364, na.rm = TRUE),
+    TONT_B = sum(idade_dias >= 0 & idade_dias <= 27 & RACACOR == 1, na.rm = TRUE),
+    TONT_PT = sum(idade_dias >= 0 & idade_dias <= 27 & RACACOR == 2, na.rm = TRUE),
+    TONT_A = sum(idade_dias >= 0 & idade_dias <= 27 & RACACOR == 3, na.rm = TRUE),
+    TONT_PD = sum(idade_dias >= 0 & idade_dias <= 27 & RACACOR == 4, na.rm = TRUE),
+    TONT_I = sum(idade_dias >= 0 & idade_dias <= 27 & RACACOR == 5, na.rm = TRUE),
+    TO_MT = sum(TPMORTEOCO %in% c(1, 2, 3, 4, 5), na.rm = TRUE),
+    TO_MT_DG = sum(TPMORTEOCO == 1, na.rm = TRUE),
+    TO_MT_PT = sum(TPMORTEOCO == 2, na.rm = TRUE),
+    TO_MT_AB = sum(TPMORTEOCO == 3, na.rm = TRUE),
+    TO_MT_42 = sum(TPMORTEOCO == 4, na.rm = TRUE),
+    TO_MT_43 = sum(TPMORTEOCO == 5, na.rm = TRUE),
+    TO_MT_P = sum(TPMORTEOCO %in% c(1, 2, 3, 4), na.rm = TRUE),
+    TO_MT_P_I = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & idade_anos >= 15 & idade_anos <= 49, na.rm = TRUE),
+    TO_MT_P_ES = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 0, na.rm = TRUE),
+    TO_MT_P_EFI = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 1, na.rm = TRUE),
+    TO_MT_P_EFII = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 2, na.rm = TRUE),
+    TO_MT_P_EM = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 3, na.rm = TRUE),
+    TO_MT_P_ESI = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 4, na.rm = TRUE),
+    TO_MT_P_ESC = sum(TPMORTEOCO %in% c(1, 2, 3, 4) & ESC2010 == 5, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ordem_var <- c(
+  "ANO", "NIVEL", "CODMUNRES", "TO", "TORC", "TORCR", "TO_NN", "TO_N", 
+  "TO_CBI", "TO_CB_N", "TO_CB_C", "TO_CB_R", "TO_CB_O", "TO_M", "TO_F", 
+  "TO_F_IF", "TO_FT", "TO_NT", "TO_NT_P", "TO_NT_T", "TO_PNT", "TONT_B", 
+  "TONT_PT", "TONT_A", "TONT_PD", "TONT_I", "TO_MT", "TO_MT_DG", "TO_MT_PT", 
+  "TO_MT_AB", "TO_MT_42", "TO_MT_43", "TO_MT_P", "TO_MT_P_I", "TO_MT_P_ES", 
+  "TO_MT_P_EFI", "TO_MT_P_EFII", "TO_MT_P_EM", "TO_MT_P_ESI", "TO_MT_P_ESC"
+)
+
+SIM_SC <- SIM_SC[, ordem_var]
 
 # Ao terminar a Tarefa 7 commit com a mensagem "script BDEM - SIM - tarefas 1 a 7" e envie para o repositório Projeto_BDEM_2016
 
 
 # Tarefa 8. Exportar o banco de dados com o nome SIM_UF.csv (Exemplo: SIM_RJ.csv)
+
+write.csv2(SIM_SC, file = "SIM_SC.csv", row.names = FALSE, fileEncoding = "UTF-8")
 
 # Ao terminar a Tarefa 8 fazer um commit com o comentário "dados SIM_UF 2016 e script - SIM - tarefas 1 a 8"  e envie para o repositório Projeto_BDEM_2016
 
@@ -886,9 +1015,13 @@ write.csv2(SINISA_UF, "SINISA_SC.csv", row.names = FALSE)
 # Lembre-se que SIDRA e ATLAS tem CODMUNRES com 7 dígitos e SINASC, SIM e SINISA com 6 dígitos
 # Além disso dentro do merge all = TRUE garante a manutenção de qualquer município presente em um dos bancos envolvidos no merge
 
+SIDRA_SC  <- read.csv("SIDRA_SC.csv")
+ATLAS_SC <- read_csv2("ATLAS_SC.csv")
+SINASC_SC <- read.csv("SINASC_SC.csv")
+SIM_SC    <- read_csv2("SIM_SC.csv")
+SINISA_SC <- read.csv("SINISA_SC.csv")
 
 # Ao terminar a Tarefa 1 commit com a mensagem "script BDEM - BDEM - tarefa 1" e envie para o repositório Projeto_BDEM_2016
-
 
 # Tarefa 2: Inserir os seguintes indicadores epidemiológicos (com apenas dias casas decimais) no BDEM_UF:
 # TFG: Taxa de fecundidade geral
