@@ -1035,8 +1035,6 @@ BDEM_SC <- merge(BDEM_SC, SINISA_SC, by = c("CODMUNRES", "ANO", "NIVEL"), all = 
 
 dim(BDEM_SC)
 
-write.csv2(BDEM_SC, "BDEM_SC.csv", row.names = FALSE)
-
 # Ao terminar a Tarefa 1 commit com a mensagem "script BDEM - BDEM - tarefa 1" e envie para o repositório Projeto_BDEM_2016
 
 # Tarefa 2: Inserir os seguintes indicadores epidemiológicos (com apenas dias casas decimais) no BDEM_UF:
@@ -1074,3 +1072,4 @@ BDEM_SC %>%
 # Tarefa 3: Exportar o banco de dados com o nome BDEM_UF.csv (Exemplo: BDEM_RJ.csv)
 # Ao terminar a Tarefa 3 commit com o comentário "dados BDEM_UF 2016 e script - BDEM - tarefas 1 a 3"  e enviar para o repositório Projeto_BDEM_2016
  
+write.csv2(BDEM_SC, "BDEM_SC.csv", row.names = FALSE)
